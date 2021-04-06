@@ -1,21 +1,23 @@
 // fetch is not defined if run in server
 // run in the browser (not server), open file index.html in browser and open console
 
-const posts = fetch('https://jsonplaceholder.typicode.com/posts')
+const fetchAPI = ({ endpoint }) => {
+  return fetch(`https://jsonplaceholder.typicode.com/${endpoint}`)
   .then((response) => response.json())
-  .then((data) => data);
-
-const users = fetch('https://jsonplaceholder.typicode.com/users')
-  .then((response) => response.json())
-  .then((data) => data);
-
-const customApi = async (post, user) => {
-  const dataUsers = await user;
-  const dataPosts = await post;
-
-  const result = await dataPosts.map(item1 => ({...item1, user: dataUsers.find(item2 => item2.id === item1.userId)}))
-
-  console.log(result, ' ... result')
+  .then((data) => data)
+  .catch(err => console.error(err));
 }
 
-customApi(posts, users);
+const customApi = () => {
+  const posts = fetchAPI({ endpoint: 'posts'});
+  const users = fetchAPI({ endpoint: 'users'});
+
+  return Promise.all([posts, users]).then(val => {
+    const [postsData, usersData] = val;
+    return postsData.map(item1 => ({...item1, user: usersData.find(item2 => item2.id === item1.userId)}));
+  }).catch(err => {
+    console.error(err);
+  });
+}
+
+customApi().then(res => console.log(res));
